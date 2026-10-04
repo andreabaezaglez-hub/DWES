@@ -1,8 +1,8 @@
 <?php
-
 /** @var String $num_columns
  *  @var String $num_rows
  *  @var String $board_markup 
+ *  @var array $link_pos
  */
 ?>
 <!DOCTYPE html>
@@ -14,246 +14,168 @@
     <link rel="stylesheet" href="./public/css/zelda-botw.css">
     <title>Zelda 40th Anniversary Board Game</title>
     <style>
+        body {
+            background-color: #008000; /* Fondo verde restaurado */
+            margin: 0;
+        }
+
         main {
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #fff;
+            text-shadow: 2px 2px #000;
         }
 
         .board-container {
             background-color: red;
-            /*width: '<?php echo $num_columns * 16 ?>px';
-            height: '<?php echo $num_rows * 16 ?>px';*/
             display: grid;
             grid-template-columns: repeat(<?php echo $num_columns; ?>, 16px);
             grid-template-rows: repeat(<?php echo $num_rows; ?>, 16px);
-
+            position: relative;
+            border: 4px solid #114c35;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
-
+/* Contenedor de la cruceta estilo NES */
         .controls-container {
-            background-color: blue;
-            width: 215px;
-            height: 215px;
+            background-color: #1a1a1a;
+            width: 160px;
+            height: 160px;
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 45px);
+            grid-template-rows: repeat(3, 45px);
+            justify-content: center;
+            align-content: center;
+            gap: 4px;
+            border: 3px solid #4d4d4d;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4), inset 2px 2px 0px #333;
         }
+
+        /* Estilo base para cada botón de dirección */
+        .controls-container a {
+            background-color: #2b2b2b;
+            color: #ffcc00; /* Dorado clásico Zelda */
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #555;
+            border-radius: 4px;
+            box-shadow: inset 2px 2px 0px #444, inset -2px -2px 0px #111;
+            transition: all 0.05s ease;
+        }
+
+        /* Efecto al pasar el ratón o pulsar */
+        .controls-container a:hover {
+            background-color: #3b3b3b;
+            color: #fff;
+        }
+
+        .controls-container a:active {
+            box-shadow: inset 2px 2px 0px #111, inset -2px -2px 0px #444;
+            background-color: #1a1a1a;
+            transform: scale(0.95);
+        }
+
+        /* Posicionamiento en cruz (D-Pad de 3x3) */
+        .btn-arriba    { grid-column: 2; grid-row: 1; }
+        .btn-izquierda { grid-column: 1; grid-row: 2; }
+        .btn-derecha   { grid-column: 3; grid-row: 2; }
+        .btn-abajo     { grid-column: 2; grid-row: 3; }
 
         .tile {
+            width: 16px;
+            height: 16px;
             background-color: yellow;
             background-image: url(./public/img/zelda_stage_bg.png);
+            position: relative;
         }
 
 
-        /* ── Fila 0 ─────────────────────────────── */
-        .door-brown-tile {
-            background-position: -1px -1px;
+      .link {
+            width: 16px;
+            height: 16px;
+            background-image: url(./public/img/zelda_stage_bg.png);
+            /* Escala la imagen entera para que las 6 columnas de tiles quepan perfectamente en tu vista */
+            background-size: 103px auto; /* 6 columnas * 17px/columna = 103px de ancho total */
+            background-position: -86px -52px; /* Coordenadas de la columna 5, fila 3 */
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
         }
 
-        .stairs-corner-tile {
-            background-position: -18px -1px;
-        }
-
-        .stairs-tile {
-            background-position: -35px -1px;
-        }
-
-        .sand-1-tile {
-            background-position: -52px -1px;
-        }
-
-        .sand-2-tile {
-            background-position: -69px -1px;
-        }
-
-        .sand-3-tile {
-            background-position: -86px -1px;
-        }
-
-        /* ── Lago (3x3) ─────────────────────────── */
-        .water-top-left-tile {
-            background-position: -1px -18px;
-        }
-
-        .water-top-tile {
-            background-position: -18px -18px;
-        }
-
-        .water-top-right-tile {
-            background-position: -35px -18px;
-        }
-
-        .water-left-tile {
-            background-position: -1px -35px;
-        }
-
-        .water-tile {
-            background-position: -18px -35px;
-        }
-
-        .water-right-tile {
-            background-position: -35px -35px;
-        }
-
-        .water-bottom-left-tile {
-            background-position: -1px -52px;
-        }
-
-        .water-bottom-tile {
-            background-position: -18px -52px;
-        }
-
-        .water-bottom-right-tile {
-            background-position: -35px -52px;
-        }
-
-        /* Esquinas interiores (el nombre indica dónde queda el agua) */
-        .water-inner-top-left-tile {
-            background-position: -1px -69px;
-        }
-
-        .water-inner-top-right-tile {
-            background-position: -18px -69px;
-        }
-
-        .water-inner-bottom-left-tile {
-            background-position: -35px -69px;
-        }
-
-        .water-inner-bottom-right-tile {
-            background-position: -52px -69px;
-        }
-
-        /* ── Bosque / acantilado verde ──────────── */
-        .wall-top-left-tile {
-            background-position: -52px -18px;
-        }
-
-        .wall-top-tile {
-            background-position: -69px -18px;
-        }
-
-        .wall-top-right-tile {
-            background-position: -86px -18px;
-        }
-
-        .wall-left-tile {
-            background-position: -52px -35px;
-        }
-
-        .wall-tile {
-            background-position: -69px -35px;
-        }
-
-        .wall-right-tile {
-            background-position: -86px -35px;
-        }
-
-        .wall-bottom-left-tile {
-            background-position: -52px -52px;
-        }
-
-        .wall-entrance-tile {
-            background-position: -86px -52px;
-        }
-
-        /* ── Objetos sueltos ────────────────────── */
-        .bush-tile {
-            background-position: -69px -52px;
-        }
-
-        .bush-dry-tile {
-            background-position: -69px -69px;
-        }
-
-        .tombstone-tile {
-            background-position: -86px -69px;
-        }
-
-        .boulder-tile {
-            background-position: -69px -86px;
-        }
-
-        .grass-tile {
-            background-position: -86px -86px;
-        }
-
-        /* ── Montaña marrón ─────────────────────── */
-        .rock-brown-top-left-tile {
-            background-position: -1px -86px;
-        }
-
-        .rock-brown-top-tile {
-            background-position: -18px -86px;
-        }
-
-        .rock-brown-top-right-tile {
-            background-position: -35px -86px;
-        }
-
-        .rock-brown-bottom-left-tile {
-            background-position: -52px -86px;
-        }
-
-        .rock-brown-left-tile {
-            background-position: -1px -103px;
-        }
-
-        .rock-brown-tile {
-            background-position: -18px -103px;
-        }
-
-        .rock-brown-right-tile {
-            background-position: -35px -103px;
-        }
-
-        /* ── Montaña gris ───────────────────────── */
-        .rock-grey-top-left-tile {
-            background-position: -52px -103px;
-        }
-
-        .rock-grey-top-tile {
-            background-position: -69px -103px;
-        }
-
-        .rock-grey-top-right-tile {
-            background-position: -86px -103px;
-        }
-
-        .rock-grey-bottom-left-tile {
-            background-position: -35px -120px;
-        }
-
-        .rock-grey-left-tile {
-            background-position: -52px -120px;
-        }
-
-        .rock-grey-tile {
-            background-position: -69px -120px;
-        }
-
-        .rock-grey-right-tile {
-            background-position: -86px -120px;
-        }
-
-        /* ── Fila 7 (resto) ─────────────────────── */
-        .stone-floor-tile {
-            background-position: -1px -120px;
-        }
-
-        .door-green-tile {
-            background-position: -18px -120px;
-        }
+        /* ── Clases del Tileset ─────────────────── */
+        .door-brown-tile { background-position: -1px -1px; }
+        .stairs-corner-tile { background-position: -18px -1px; }
+        .stairs-tile { background-position: -35px -1px; }
+        .sand-1-tile { background-position: -52px -1px; }
+        .sand-2-tile { background-position: -69px -1px; }
+        .sand-3-tile { background-position: -86px -1px; }
+        .water-top-left-tile { background-position: -1px -18px; }
+        .water-top-tile { background-position: -18px -18px; }
+        .water-top-right-tile { background-position: -35px -18px; }
+        .water-left-tile { background-position: -1px -35px; }
+        .water-tile { background-position: -18px -35px; }
+        .water-right-tile { background-position: -35px -35px; }
+        .water-bottom-left-tile { background-position: -1px -52px; }
+        .water-bottom-tile { background-position: -18px -52px; }
+        .water-bottom-right-tile { background-position: -35px -52px; }
+        .wall-top-left-tile { background-position: -52px -18px; }
+        .wall-top-tile { background-position: -69px -18px; }
+        .wall-top-right-tile { background-position: -86px -18px; }
+        .wall-left-tile { background-position: -52px -35px; }
+        .wall-tile { background-position: -69px -35px; }
+        .wall-right-tile { background-position: -86px -35px; }
+        .wall-bottom-left-tile { background-position: -52px -52px; }
+        .wall-entrance-tile { background-position: -86px -52px; }
+        .bush-tile { background-position: -69px -52px; }
+        .bush-dry-tile { background-position: -69px -69px; }
+        .tombstone-tile { background-position: -86px -69px; }
+        .boulder-tile { background-position: -69px -86px; }
+        .grass-tile { background-position: -86px -86px; }
+        .rock-brown-top-left-tile { background-position: -1px -86px; }
+        .rock-brown-top-tile { background-position: -18px -86px; }
+        .rock-brown-top-right-tile { background-position: -35px -86px; }
+        .rock-brown-bottom-left-tile { background-position: -52px -86px; }
+        .rock-brown-left-tile { background-position: -1px -103px; }
+        .rock-brown-tile { background-position: -18px -103px; }
+        .rock-brown-right-tile { background-position: -35px -103px; }
+        .rock-grey-top-left-tile { background-position: -52px -103px; }
+        .rock-grey-top-tile { background-position: -69px -103px; }
+        .rock-grey-top-right-tile { background-position: -86px -103px; }
+        .rock-grey-bottom-left-tile { background-position: -35px -120px; }
+        .rock-grey-left-tile { background-position: -52px -120px; }
+        .rock-grey-tile { background-position: -69px -120px; }
+        .rock-grey-right-tile { background-position: -86px -120px; }
+        .stone-floor-tile { background-position: -1px -120px; }
+        .door-green-tile { background-position: -18px -120px; }
     </style>
 </head>
 
 <body>
     <main>
         <h1>Zelda 40th Anniversary</h1>
+        
         <?php echo $board_markup; ?>
+        
+        <!-- Botones funcionales usando el array link_pos -->
         <div class="controls-container">
-
+            <a class="btn-arriba" href="index.php?x=<?php echo $link_pos['x']; ?>&y=<?php echo $link_pos['y'] - 1; ?>">⬆️</a>
+            <a class="btn-izquierda" href="index.php?x=<?php echo $link_pos['x'] - 1; ?>&y=<?php echo $link_pos['y']; ?>">⬅️</a>
+            <a class="btn-abajo" href="index.php?x=<?php echo $link_pos['x']; ?>&y=<?php echo $link_pos['y'] + 1; ?>">⬇️</a>
+            <a class="btn-derecha" href="index.php?x=<?php echo $link_pos['x'] + 1; ?>&y=<?php echo $link_pos['y']; ?>">➡️</a>
         </div>
     </main>
-
 </body>
 
 </html>

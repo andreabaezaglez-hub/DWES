@@ -272,6 +272,18 @@ i.symbol.heart:before { content: "\2764"; /*  \2665 \2661 */ }
   }
 }
 
+.link {
+            width: 16px;
+            height: 16px;
+            background-color: magenta; /* ¡Color de respaldo para verlo sí o sí! */
+           /* background-image: url(./public/img/link.png); */
+            background-size: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
 /* Sheikah alphabet */
 
 i.alphabet:before {
