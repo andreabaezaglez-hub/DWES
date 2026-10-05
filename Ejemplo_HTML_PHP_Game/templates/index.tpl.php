@@ -15,7 +15,7 @@
     <title>Zelda 40th Anniversary Board Game</title>
     <style>
         body {
-            background-color: #008000; /* Fondo verde restaurado */
+            background-color: gray; 
             margin: 0;
         }
 
@@ -28,8 +28,7 @@
         }
 
         h1 {
-            color: #fff;
-            text-shadow: 2px 2px #000;
+            color: #0f0f0f;
         }
 
         .board-container {
@@ -39,11 +38,9 @@
             grid-template-rows: repeat(<?php echo $num_rows; ?>, 16px);
             position: relative;
             border: 4px solid #114c35;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
 /* Contenedor de la cruceta estilo NES */
         .controls-container {
-            background-color: #1a1a1a;
             width: 160px;
             height: 160px;
             margin-top: 20px;
@@ -53,15 +50,12 @@
             justify-content: center;
             align-content: center;
             gap: 4px;
-            border: 3px solid #4d4d4d;
-            border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4), inset 2px 2px 0px #333;
         }
 
         /* Estilo base para cada botón de dirección */
         .controls-container a {
             background-color: #2b2b2b;
-            color: #ffcc00; /* Dorado clásico Zelda */
+            color: #b3e91e; /* Dorado clásico Zelda */
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -104,10 +98,7 @@
       .link {
             width: 16px;
             height: 16px;
-            background-image: url(./public/img/zelda_stage_bg.png);
-            /* Escala la imagen entera para que las 6 columnas de tiles quepan perfectamente en tu vista */
-            background-size: 103px auto; /* 6 columnas * 17px/columna = 103px de ancho total */
-            background-position: -86px -52px; /* Coordenadas de la columna 5, fila 3 */
+            background-image: url(./public/img/Link.png);
             position: absolute;
             top: 0;
             left: 0;
@@ -170,10 +161,10 @@
         
         <!-- Botones funcionales usando el array link_pos -->
         <div class="controls-container">
-            <a class="btn-arriba" href="index.php?x=<?php echo $link_pos['x']; ?>&y=<?php echo $link_pos['y'] - 1; ?>">⬆️</a>
-            <a class="btn-izquierda" href="index.php?x=<?php echo $link_pos['x'] - 1; ?>&y=<?php echo $link_pos['y']; ?>">⬅️</a>
-            <a class="btn-abajo" href="index.php?x=<?php echo $link_pos['x']; ?>&y=<?php echo $link_pos['y'] + 1; ?>">⬇️</a>
-            <a class="btn-derecha" href="index.php?x=<?php echo $link_pos['x'] + 1; ?>&y=<?php echo $link_pos['y']; ?>">➡️</a>
+            <a class="btn-arriba" href="index.php?x=<?php echo $link_pos['x']; ?>&y=<?php echo $link_pos['y'] - 1; ?>">🠹</a>
+            <a class="btn-izquierda" href="index.php?x=<?php echo $link_pos['x'] - 1; ?>&y=<?php echo $link_pos['y']; ?>">🠸</a>
+            <a class="btn-abajo" href="index.php?x=<?php echo $link_pos['x']; ?>&y=<?php echo $link_pos['y'] + 1; ?>">🠻</a>
+            <a class="btn-derecha" href="index.php?x=<?php echo $link_pos['x'] + 1; ?>&y=<?php echo $link_pos['y']; ?>">🠺</a>
         </div>
     </main>
 </body>

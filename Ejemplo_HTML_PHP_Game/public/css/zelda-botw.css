@@ -275,8 +275,7 @@ i.symbol.heart:before { content: "\2764"; /*  \2665 \2661 */ }
 .link {
             width: 16px;
             height: 16px;
-            background-color: magenta; /* ¡Color de respaldo para verlo sí o sí! */
-           /* background-image: url(./public/img/link.png); */
+            background-image: url(./public/img/Link.png);
             background-size: cover;
             position: absolute;
             top: 0;
