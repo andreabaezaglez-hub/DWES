@@ -30,7 +30,14 @@ if ($dbs) {
 //index.php -> si no pongo nada, lista todas las familias de la tabla
 //index.php?cod = {codfamilia}
 
+if (isset ($_GET['cod'])) {
+    // Si se pasa el cod por la URL
+    $cod = $_GET['cod'];
+    
+} else {
+    // si no se pasa el cod por la URL, mostrar todas las familias
 
+}
 // Cerrar conexión
 $dbh = null;
 
