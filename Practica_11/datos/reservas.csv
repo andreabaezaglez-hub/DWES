@@ -1,11 +1,12 @@
-NOMBRE, EMAIL, PISTA, FECHA, HORA, MATERIAL, NORMAS
-"Manuel García", manuel@email.com, Pádel 1, 2026-10-15, 16:00, Palas, Sí
-"Laura Fernández", laura@email.com, Pádel 2, 2026-10-15, 17:00, raquetas, Sí
-"Carlos López", carlos@email.com, Pádel 1, 2026-10-15, 18:00, balón, Sí
-"Ana Martínez", ana@email.com, Tenis, 2026-10-16, 16:00, raquetas, Sí
-"David Sánchez", david@email.com, Baloncesto, 2026-10-16, 19:00, balón;petos, Sí
-"Lucía Romero", lucia@email.com, Pádel 1, 2026-10-17, 20:00, , Sí
-"Javier Torres", javier@email.com, Pádel 2, 2026-10-18, 16:00, raquetas;petos, Sí
-"Marta Díaz", marta@email.com, Tenis, 2026-10-19, 21:00, raquetas, Sí
-"Pablo Ruiz", pablo@email.com, Baloncesto, 2026-10-20, 18:00, balón;petos, Sí
-"Elena Moreno", elena@email.com, Pádel 1, 2026-10-22, 17:00, , Sí
+ID,NOMBRE,EMAIL,PISTA,FECHA,HORA,MATERIAL,NORMAS
+1,"Manuel García",manuel@email.com,"Pádel 1",2026-10-15,16:00,Palas,Sí
+2,"Laura Fernández",laura@email.com,"Pádel 2",2026-10-15,17:00,raquetas,Sí
+3,"Carlos López",carlos@email.com,"Pádel 1",2026-10-15,18:00,balón,Sí
+4,"Ana Martínez",ana@email.com,Tenis,2026-10-16,16:00,raquetas,Sí
+5,"David Sánchez",david@email.com,Baloncesto,2026-10-16,19:00,balón;petos,Sí
+6,"Lucía Romero",lucia@email.com,"Pádel 1",2026-10-17,20:00,,Sí
+7,"Javier Torres",javier@email.com,"Pádel 2",2026-10-18,16:00,raquetas;petos,Sí
+8,"Marta Díaz",marta@email.com,Tenis,2026-10-19,21:00,raquetas,Sí
+9,"Pablo Ruiz",pablo@email.com,Baloncesto,2026-10-20,18:00,balón;petos,Sí
+10,"Elena Moreno",elena@email.com,"Pádel 1",2026-10-22,17:00,,Sí
+11,"Manoli Perez",manoli.perez@gmail.com,Tenis,2026-10-24,18:00,raquetas;pelotas,Sí

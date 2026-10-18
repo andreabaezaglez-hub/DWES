@@ -1,83 +1,131 @@
 <?php
 
-//**Inicialización del entorno**
-
+// Inicialización del entorno
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-//Definición de funciones
-include ( __DIR__.'funciones.php');
+require_once __DIR__ . '/funciones.php';
 
+// Ruta del archivo CSV
+$ruta = __DIR__ . '/datos/reservas.csv';
+
+// Pistas disponibles
+$pistas = ['Pádel 1', 'Pádel 2', 'Tenis', 'Baloncesto'];
+
+// Leer los filtros de la URL
+$pistaSeleccionada = campoTexto($_GET, 'pista');
+$fechaSeleccionada = campoTexto($_GET, 'fecha');
+
+// Leer las reservas
+$reservas = leerReservas($ruta);
+
+$reservasFiltradas = [];
+
+$encabezados = [
+    'ID',
+    'NOMBRE',
+    'EMAIL',
+    'PISTA',
+    'FECHA',
+    'HORA',
+    'MATERIAL',
+    'NORMAS'
+];
+
+// Filtrar las reservas
+foreach ($reservas as $reserva) {
+
+    $coincidePista = (
+        $pistaSeleccionada === ''
+        || ($reserva['PISTA'] ?? '') === $pistaSeleccionada
+    );
+
+    $coincideFecha = (
+        $fechaSeleccionada === ''
+        || ($reserva['FECHA'] ?? '') === $fechaSeleccionada
+    );
+
+    if ($coincidePista && $coincideFecha) {
+        $reservasFiltradas[] = $reserva;
+    }
+}
 
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservas Polideportivo</title>
-    <!-- <link rel="stylesheet" href="https://unpkg.com/simpledotcss/simple.css"> -->
+    <title>Reservas del polideportivo</title>
+    <link rel="stylesheet" href="https://unpkg.com/simpledotcss/simple.css">
 </head>
+
 <body>
-    <button><a href="reservar.php" style="color: white;">Reservar</a></button>
 
-<?php
+    <h1>Reservas del polideportivo</h1>
 
+    <p><a href="reservar.php">Hacer una reserva</a></p>
 
-$encabezado = explode(",", trim($lineas[0]));
+    <form method="GET" action="index.php">
 
-//dump($encabezado);
+        <label for="pista">Filtrar por pista:</label>
 
-$lista_reserva = file_get_contents ('datos/reservas.csv');
+        <select name="pista" id="pista">
+            <option value="">Todas las pistas</option>
 
+            <?php foreach ($pistas as $opcion): ?>
+                <option
+                    value="<?= e($opcion) ?>"
+                    <?= $pistaSeleccionada === $opcion ? 'selected' : '' ?>>
+                    <?= e($opcion) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
 
-$lineas = explode("\n", trim($lista_reserva));
+        <label for="fecha">Filtrar por fecha:</label>
 
-$array_reservas = [];
+        <input
+            type="date"
+            name="fecha"
+            id="fecha"
+            value="<?= e($fechaSeleccionada) ?>">
 
-foreach ($lineas as $linea) {
-    if (!empty(trim($linea))) { 
-        $array_reservas[] = explode(",", $linea);
-        
-    }
-}
+        <button type="submit">Filtrar</button>
 
-//dump($array_reservas);
+        <a href="index.php">Limpiar filtros</a>
 
+    </form>
 
-$reservas = [];
+    <?php if (empty($reservasFiltradas)): ?>
 
+        <p>No hay reservas</p>
 
+    <?php else: ?>
 
-    foreach ($array_reservas as $fila) {
-        $reservas[] = array_combine($encabezado, array_slice($fila, 0, count($encabezado)));
-    }
-    $actual = next($array_reservas);
+        <table>
+            <thead>
+                <tr>
+                    <?php foreach ($encabezados as $encabezado): ?>
+                        <th><?= e($encabezado) ?></th>
+                    <?php endforeach; ?>
+                </tr>
+            </thead>
 
+            <tbody>
+                <?php foreach ($reservasFiltradas as $reserva): ?>
+                    <tr>
+                        <?php foreach ($encabezados as $encabezado): ?>
+                            <td><?= e($reserva[$encabezado] ?? '') ?></td>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
 
-//dump($reservas);  
-
-echo "<table border='1'>";
-
-
-
-for ($i = 0; $i < count($reservas); $i++) {
-    echo "<tr>";
-
-    foreach ($reservas[$i] as $clave => $valor) {
-        echo "<td>" . htmlspecialchars((string)$valor) . "</td>";
-    }
-
-    echo "</tr>";
-}
-
-echo "</table>";
-
-
-
-?>
+    <?php endif; ?>
 
 </body>
 </html>
