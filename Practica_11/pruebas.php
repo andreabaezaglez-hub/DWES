@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-include __DIR__ . '/funciones.php';
+//include __DIR__ . '/funciones.php';
 include __DIR__ . '/index.php';
 
 $fecha = $_GET["FECHA"] ?? null;
@@ -23,23 +23,22 @@ function validateQueryString($campo)
     return true;
 }
 
-// TO DO:
-// Corregir la condición para que solo muestre el mensaje
-// cuando NO se haya indicado ni FECHA ni PISTA.
-// Evitar que el programa continúe si no hay ningún filtro.
 
-if (!validateQueryString("FECHA") || !validateQueryString("PISTA")) {
-    echo "Necesitamos minimo un parámetro de fecha o pista para poder filtrar las reservas.";
-}
+// if (!validateQueryString("FECHA") || !validateQueryString("PISTA")) {
+//     echo "Necesitamos minimo un parámetro de fecha o pista para poder filtrar las reservas.";
+// }
 
 // Filtrar las reservas según los parámetros recibidos.
-function filterReservations($reservas, $fecha, $pista)
-{
+function filterReservations($reservas, $filtro){
     $filteredReservations = [];
 
+    if(isset($filtro['PISTA'])){
+        return $filteredReservations['PISTA'] === $filtro['pista']?true:false;
+    }
+
     foreach ($reservas as $reserva) {
-        if (($fecha === null || ($reserva['FECHA'] ?? '') === $fecha) &&
-            ($pista === null || ($reserva['PISTA'] ?? '') === $pista)
+        if (($filtro === null || ($reserva['FECHA'] ?? '') === $filtro) &&
+            ($filtro === null || ($reserva['PISTA'] ?? '') === $filtro)
         ) {
             $filteredReservations[] = $reserva;
         }

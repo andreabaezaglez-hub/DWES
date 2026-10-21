@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/funciones.php';
+include(__DIR__ . '/funciones.php');
 
 // Ruta del archivo CSV
 $ruta = __DIR__ . '/datos/reservas.csv';

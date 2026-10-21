@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/funciones.php';
+include(__DIR__ . '/funciones.php');
 
 // Número de reserva recibido por la URL
 $numero = campoTexto($_GET, 'n');
