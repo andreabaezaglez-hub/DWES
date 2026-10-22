@@ -1,7 +1,8 @@
 <?php
 
-function dump ($var){
-    echo '<pre>'.print_r($var, 1). '</pre>';
+function dump($var)
+{
+    echo '<pre>' . print_r($var, 1) . '</pre>';
 }
 
 
@@ -46,73 +47,13 @@ function campoLista(array $datos, string $campo): array
     return $valor;
 }
 
-// Leer todas las reservas del CSV
-function leerReservas(string $ruta): array
-{
-    $reservas = [];
-
-    if (!is_file($ruta)) {
-        return $reservas;
-    }
-
-    $fichero = fopen($ruta, 'r');
-
-    if ($fichero === false) {
-        return $reservas;
-    }
-
-    $encabezados = fgetcsv($fichero, 0, ',');
-
-    if ($encabezados !== false) {
-        $encabezados = array_map('trim', $encabezados);
-
-        while (($fila = fgetcsv($fichero, 0, ',')) !== false) {
-
-            if ($fila === [null] || count($fila) !== count($encabezados)) {
-                continue;
-            }
-
-            $fila = array_map('trim', $fila);
-            $reserva = array_combine($encabezados, $fila);
-
-            if ($reserva !== false && isset($reserva['ID'])) {
-                $reservas[] = $reserva;
-            }
-        }
-    }
-
-    fclose($fichero);
-
-    return $reservas;
-}
-
-// Calcular el siguiente identificador
-function siguienteId(array $reservas): int
-{
-    $mayor = 0;
-
-    foreach ($reservas as $reserva) {
-        $id = $reserva['ID'] ?? '';
-
-        if (ctype_digit((string)$id)) {
-            $id = (int)$id;
-
-            if ($id > $mayor) {
-                $mayor = $id;
-            }
-        }
-    }
-
-    return $mayor + 1;
-}
-
 // Validar los datos de la reserva
 function validarReserva(
     array $datos,
     array $pistas,
     array $horas,
     array $materiales,
-    array $reservas,
+    mysqli $connexion,
     array &$errores
 ): bool {
 
@@ -120,7 +61,8 @@ function validarReserva(
     $longitud = preg_match_all('/./us', $datos['nombre']);
 
     if ($longitud === false || $longitud < 2 || $longitud > 60) {
-        $errores['nombre'] = 'El nombre debe tener entre 2 y 60 caracteres.';
+        $errores['nombre'] =
+            'El nombre debe tener entre 2 y 60 caracteres.';
     }
 
     // Comprobar el email
@@ -141,7 +83,10 @@ function validarReserva(
     $fechaCorrecta = false;
 
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/D', $fecha)) {
-        $fechaObjeto = DateTimeImmutable::createFromFormat('!Y-m-d', $fecha);
+        $fechaObjeto = DateTimeImmutable::createFromFormat(
+            '!Y-m-d',
+            $fecha
+        );
 
         if (
             $fechaObjeto !== false
@@ -156,7 +101,8 @@ function validarReserva(
         || $fecha < $hoy
         || $fecha > $limite
     ) {
-        $errores['fecha'] = 'La fecha debe estar entre hoy y los próximos 14 días.';
+        $errores['fecha'] =
+            'La fecha debe estar entre hoy y los próximos 14 días.';
     }
 
     // Comprobar la hora
@@ -164,10 +110,11 @@ function validarReserva(
         $errores['hora'] = 'Selecciona una hora válida.';
     }
 
-    // Comprobar el material
+    // Comprobar los materiales
     foreach ($datos['material'] as $elemento) {
         if (!in_array($elemento, $materiales, true)) {
-            $errores['material'] = 'Has seleccionado un material no válido.';
+            $errores['material'] =
+                'Has seleccionado un material no válido.';
             break;
         }
     }
@@ -177,25 +124,92 @@ function validarReserva(
         $errores['normas'] = 'Debes aceptar las normas.';
     }
 
-    // Comprobar que no exista otra reserva para esa pista, fecha y hora
+    // Comprobar disponibilidad en MySQL
     if (
         !isset($errores['pista'])
         && !isset($errores['fecha'])
         && !isset($errores['hora'])
     ) {
-        foreach ($reservas as $reserva) {
-            if (
-                ($reserva['PISTA'] ?? '') === $datos['pista']
-                && ($reserva['FECHA'] ?? '') === $datos['fecha']
-                && ($reserva['HORA'] ?? '') === $datos['hora']
-            ) {
-                $errores['hora'] = 'Esa pista ya está reservada en esa fecha y hora.';
-                break;
-            }
+        $sql = "
+            SELECT id
+            FROM reservas
+            WHERE pista = ?
+              AND fecha = ?
+              AND hora = ?
+            LIMIT 1
+        ";
+
+        $stmt = $connexion->prepare($sql);
+
+        if ($stmt === false) {
+            throw new RuntimeException(
+                'Error al preparar la consulta: ' . $connexion->error
+            );
         }
+
+        $hora = $datos['hora'];
+
+        $stmt->bind_param(
+            'sss',
+            $datos['pista'],
+            $datos['fecha'],
+            $hora
+        );
+
+        if (!$stmt->execute()) {
+            $error = $stmt->error;
+            $stmt->close();
+
+            throw new RuntimeException(
+                'Error al comprobar la disponibilidad: ' . $error
+            );
+        }
+
+        $stmt->store_result();
+
+        if ($stmt->num_rows > 0) {
+            $errores['hora'] =
+                'Esa pista ya está reservada en esa fecha y hora.';
+        }
+
+        $stmt->close();
     }
 
     return empty($errores);
+}
+
+
+/**
+ * Filtrar reservas utilizando parámetros de la query string.
+ */
+function filterReservations(array $reservas, array $filtros): array
+{
+    $reservasFiltradas = [];
+
+    $pista = campoTexto($filtros, 'pista');
+    $fecha = campoTexto($filtros, 'fecha');
+
+    foreach ($reservas as $reserva) {
+
+        // Comprobar si coincide la pista
+        $coincidePista = (
+            $pista === ''
+            || ($reserva['PISTA'] ?? '') === $pista
+        );
+
+        // Comprobar si coincide la fecha
+        $coincideFecha = (
+            $fecha === ''
+            || ($reserva['FECHA'] ?? '') === $fecha
+        );
+
+        // Añadir la reserva si cumple ambos filtros
+        if ($coincidePista && $coincideFecha) {
+            $reservasFiltradas[] = $reserva;
+        }
+    }
+
+    return $reservasFiltradas;
 }
 
 ?>

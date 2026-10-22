@@ -7,8 +7,19 @@ error_reporting(E_ALL);
 
 include(__DIR__ . '/funciones.php');
 
-// Ruta del archivo CSV
-$ruta = __DIR__ . '/datos/reservas.csv';
+// Conexión a la base de datos
+$connexion = new mysqli(
+    'localhost',
+    'root',
+    '',
+    'reservas_deportivas'
+);
+
+if ($connexion->connect_error) {
+    die('Error de conexión: ' . $connexion->connect_error);
+}
+
+$connexion->set_charset('utf8mb4');
 
 // Opciones del formulario
 $pistas = ['Pádel 1', 'Pádel 2', 'Tenis', 'Baloncesto'];
@@ -37,7 +48,7 @@ $errores = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // Recoger los datos
+    // Recoger los datos del formulario
     $nombre = campoTexto($_POST, 'nombre');
     $email = campoTexto($_POST, 'email');
     $pista = campoTexto($_POST, 'pista');
@@ -46,10 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $material = campoLista($_POST, 'material');
     $normas = campoTexto($_POST, 'normas') === '1';
 
-    // Leer las reservas existentes
-    $reservas = leerReservas($ruta);
-
-    // Juntar los datos del formulario
+    // Agrupar los datos
     $datos = [
         'nombre' => $nombre,
         'email' => $email,
@@ -60,78 +68,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'normas' => $normas
     ];
 
-    // Validar los datos
+    // Validar los datos usando MySQL
     $valido = validarReserva(
         $datos,
         $pistas,
         $horas,
         $materiales,
-        $reservas,
+        $connexion,
         $errores
     );
 
     if (!$valido) {
         http_response_code(422);
+
     } else {
 
-        // Calcular el identificador de la nueva reserva
-        $numero = siguienteId($reservas);
+        // Convertir los materiales a texto para MySQL.
+        // Si no hay materiales, guardar NULL.
+        $materialTexto = empty($material)
+            ? null
+            : implode(';', $material);
 
-        // Convertir los materiales en un texto
-        $materialTexto = implode(';', $material);
+        // Convertir las normas a 1 o 0
+        $normasAceptadas = $normas ? 1 : 0;
 
-        $filaNueva = [
-            $numero,
-            $nombre,
-            $email,
-            $pista,
-            $fecha,
-            $hora,
-            $materialTexto,
-            'Sí'
-        ];
+        // Insertar la reserva.
+        // El ID lo genera MySQL automáticamente.
+        $sql = "
+            INSERT INTO reservas
+                (nombre, email, pista, fecha, hora, material, normas)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ";
 
-        // Guardar la reserva en el CSV
-        $fichero = fopen($ruta, 'a');
+        $stmt = $connexion->prepare($sql);
 
-        if ($fichero !== false) {
-
-            // Asegurar que la reserva empiece en una línea nueva
-            $contenido = file_get_contents($ruta);
-
-            if (
-                $contenido !== false
-                && $contenido !== ''
-                && substr($contenido, -1) !== "\n"
-            ) {
-                fwrite($fichero, PHP_EOL);
-            }
-
-            if (flock($fichero, LOCK_EX)) {
-                $guardada = fputcsv($fichero, $filaNueva);
-                fflush($fichero);
-                flock($fichero, LOCK_UN);
-            } else {
-                $guardada = false;
-            }
-
-            fclose($fichero);
-
-            if ($guardada !== false) {
-                // Redirigir a la confirmación
-                header('Location: confirmacion.php?n=' . $numero, true, 303);
-                exit;
-            } else {
-                $errores['general'] = 'No se ha podido guardar la reserva.';
-                http_response_code(500);
-            }
+        if ($stmt === false) {
+            $errores['general'] =
+                'No se pudo preparar la inserción de la reserva.';
+            http_response_code(500);
 
         } else {
-            $errores['general'] = 'No se ha podido abrir el archivo.';
-            http_response_code(500);
+
+            $stmt->bind_param(
+                'ssssssi',
+                $nombre,
+                $email,
+                $pista,
+                $fecha,
+                $hora,
+                $materialTexto,
+                $normasAceptadas
+            );
+
+            if ($stmt->execute()) {
+
+                // Obtener el ID generado por MySQL
+                $numero = $connexion->insert_id;
+
+                $stmt->close();
+                $connexion->close();
+
+                // Redirigir a la confirmación
+                header(
+                    'Location: confirmacion.php?n=' . $numero,
+                    true,
+                    303
+                );
+                exit;
+
+            } else {
+
+                $errorMySQL = $stmt->error;
+
+                $stmt->close();
+
+                // Registrar el error sin mostrar detalles de la BD al usuario
+                error_log('Error al guardar la reserva: ' . $errorMySQL);
+
+                $errores['general'] =
+                    'No se ha podido guardar la reserva. Inténtalo de nuevo.';
+
+                http_response_code(500);
+            }
         }
     }
 }
+
+$connexion->close();
 
 ?>
 
@@ -141,8 +164,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Reservar pista deportiva</title>
-    <link rel="stylesheet" href="https://unpkg.com/simpledotcss/simple.css">
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/simpledotcss/simple.css">
 </head>
 
 <body>
@@ -163,6 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <p>
             <label for="nombre">Nombre:</label>
+
             <input
                 type="text"
                 name="nombre"
@@ -179,6 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <p>
             <label for="email">Email:</label>
+
             <input
                 type="email"
                 name="email"
@@ -193,6 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <p>
             <label for="pista">Pista:</label>
+
             <select name="pista" id="pista" required>
                 <option value="">Selecciona una pista</option>
 
@@ -212,6 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <p>
             <label for="fecha">Fecha:</label>
+
             <input
                 type="date"
                 name="fecha"
@@ -237,6 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         value="<?= e($opcion) ?>"
                         <?= $hora === $opcion ? 'checked' : '' ?>
                         required>
+
                     <?= e($opcion) ?>
                 </label>
             <?php endforeach; ?>
@@ -255,7 +287,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         type="checkbox"
                         name="material[]"
                         value="<?= e($opcion) ?>"
-                        <?= in_array($opcion, $material, true) ? 'checked' : '' ?>>
+                        <?= in_array($opcion, $material, true)
+                            ? 'checked'
+                            : '' ?>>
+
                     <?= e($opcion) ?>
                 </label>
             <?php endforeach; ?>
@@ -273,6 +308,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     value="1"
                     <?= $normas ? 'checked' : '' ?>
                     required>
+
                 Acepto las normas del polideportivo.
             </label>
 
