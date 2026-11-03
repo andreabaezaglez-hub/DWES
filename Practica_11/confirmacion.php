@@ -16,18 +16,18 @@ $reservaEncontrada = null;
 if (ctype_digit($numero) && (int)$numero > 0) {
 
     // Conexión a la base de datos
-    $connexion = new mysqli(
+    $conexion = new mysqli(
         'localhost',
         'root',
         '',
         'reservas_deportivas'
     );
 
-    if ($connexion->connect_error) {
-        die('Error de conexión: ' . $connexion->connect_error);
+    if ($conexion->connect_error) {
+        die('Error de conexión: ' . $conexion->connect_error);
     }
 
-    $connexion->set_charset('utf8mb4');
+    $conexion->set_charset('utf8mb4');
 
     // Buscar la reserva por su ID
     $sql = "
@@ -45,10 +45,10 @@ if (ctype_digit($numero) && (int)$numero > 0) {
         LIMIT 1
     ";
 
-    $stmt = $connexion->prepare($sql);
+    $stmt = $conexion->prepare($sql);
 
     if ($stmt === false) {
-        $connexion->close();
+        $conexion->close();
         die('Error al preparar la consulta de reserva.');
     }
 
@@ -58,7 +58,7 @@ if (ctype_digit($numero) && (int)$numero > 0) {
 
     if (!$stmt->execute()) {
         $stmt->close();
-        $connexion->close();
+        $conexion->close();
         die('Error al consultar la reserva.');
     }
 
@@ -69,7 +69,7 @@ if (ctype_digit($numero) && (int)$numero > 0) {
     }
 
     $stmt->close();
-    $connexion->close();
+    $conexion->close();
 }
 
 // Si no existe, devolver un 404

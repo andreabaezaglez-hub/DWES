@@ -9,16 +9,16 @@ error_reporting(E_ALL);
 include(__DIR__ . '/funciones.php');
 
 // Conexion a base de datos
-$connexion = new mysqli("localhost", "root", "", "reservas_deportivas");
+$conexion = new mysqli("localhost", "root", "", "reservas_deportivas");
 
 // Check conexion
-if ($connexion->connect_error) {
-    die("Conexión fallida:" . $connexion->connect_error);
+if ($conexion->connect_error) {
+    die("Conexión fallida:" . $conexion->connect_error);
 }
 echo "Conexión exitosa.<br><br>";
 
 // Set character set to UTF-8
-$connexion->set_charset("utf8mb4");
+$conexion->set_charset("utf8mb4");
 
 // Pistas disponibles
 $pistas = ['Pádel 1', 'Pádel 2', 'Tenis', 'Baloncesto'];
@@ -58,10 +58,10 @@ $sql_select = "
     ORDER BY fecha, hora
 ";
 
-$result = $connexion->query($sql_select);
+$result = $conexion->query($sql_select);
 
 if ($result === false) {
-    die("Error en la consulta: " . $connexion->error);
+    die("Error en la consulta: " . $conexion->error);
 }
 
 // Guardar los resultados en un array
@@ -95,7 +95,7 @@ $result->free();
 $reservasFiltradas = filterReservations($reservas, $_GET);
 
 
-$connexion->close();
+$conexion->close();
 
 // Cargar la plantilla HTML
 require __DIR__ . '/index.tpl.php';
