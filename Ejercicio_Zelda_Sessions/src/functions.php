@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 function dump($var){
     echo '<pre>';
     var_dump($var);
@@ -18,10 +18,16 @@ function dump($var){
 // }
 
 function getPosFromSession(){
+
     if(isset($_SESSION['position'])){
-        $link_pos = $_POST['link_pos'];
+        $link_pos = $_SESSION['position'];
+    } else {
+        $link_pos = ['left' => 1, 'top' => 1];
     }
+
+    return $link_pos;
 }
+
 function getBoardFromCsv(String $rutaCSV)
 {
     $stream = fopen($rutaCSV, 'r');

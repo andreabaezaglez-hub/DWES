@@ -3,8 +3,10 @@
 /** @var String $num_columns
  *  @var String $num_rows
  *  @var String $board_markup 
- *  @var array $link_pos
+ *  @var int $x
+ *  @var int $y
  */
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -35,7 +37,7 @@
         .controls-container {
             width: 215px;
             height: 215px;
-            display:flex;
+            display: flex;
         }
 
         .tile {
@@ -44,19 +46,20 @@
         }
 
         /* -- Estilos de personajes */
-        .character{
-          width: 16px;
-          height: 16px;
-          position: absolute;
-          background-size: contain;
-          background-repeat: no-repeat;
+        .character {
+            width: 16px;
+            height: 16px;
+            position: absolute;
+            background-size: contain;
+            background-repeat: no-repeat;
         }
-        .link{
+
+        .link {
             background-image: url(./public/img/Link.png);
-            top: <?php echo ($link_pos['top']-1)*16; ?>px;
-            left: <?php echo ($link_pos['left']-1)*16; ?>px;
+            top: <?php echo ($y - 1) * 16; ?>px;
+            left: <?php echo ($x - 1) * 16; ?>px;
         }
-  
+
 
 
         /* ── Fila 0 ─────────────────────────────── */
@@ -266,19 +269,23 @@
         <h1>Zelda 40th Anniversary</h1>
         <?php echo $board_markup; ?>
         <div class="controls-container">
-            <?php if($link_pos['top'] != 1): ?>
-                <a href="./?link_top_pos=<?php echo $link_pos['top']-1; ?>&link_left_pos=<?php echo $link_pos['left']; ?>">Arriba</a>
+
+            <?php if ($y > 1): ?>
+                <a href="./?direccion=arriba">Arriba</a>
             <?php endif ?>
-            <?php if($link_pos['left'] != $num_columns): ?>
-                <a href="./?link_top_pos=<?php echo $link_pos['top']; ?>&link_left_pos=<?php echo $link_pos['left']+1; ?>">Derecha</a>
+
+            <?php if ($x < $num_columns): ?>
+                <a href="./?direccion=derecha">Derecha</a>
             <?php endif ?>
-            <?php if($link_pos['top'] != $num_rows): ?>
-                <a href="./?link_top_pos=<?php echo $link_pos['top']+1; ?>&link_left_pos=<?php echo $link_pos['left']; ?>">Abajo</a>
+
+            <?php if ($y < $num_rows): ?>
+                <a href="./?direccion=abajo">Abajo</a>
             <?php endif ?>
-            <?php if($link_pos['left'] != 1): ?>
-                <a href="./?link_top_pos=<?php echo $link_pos['top']; ?>&link_left_pos=<?php echo $link_pos['left']-1; ?>">Izquierda</a>
+
+            <?php if ($x > 1): ?>
+                <a href="./?direccion=izquierda">Izquierda</a>
             <?php endif ?>
-                
+
         </div>
     </main>
 

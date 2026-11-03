@@ -6,35 +6,60 @@ error_reporting(E_ALL);
 session_start();
 
 
-include(__DIR__.'/src/functions.php');
+include(__DIR__ . '/src/functions.php');
 
 
-$board = getBoardFromCSV(__DIR__.'/src/board_data/board1.csv');
-
-echo session_id();
-$_SESSION['usuario'] = ['id' =>  7, 'nombre' => 'Andrea'];
-$_SESSION['visitas'] = ($_SESSION['visitas'] ?? 0) + 1;
-
-//$_SESSION['clave'] = $valor;
-$valor = $_SESSION['clave'] ?? 'por defecto';
-isset($_SESSION['clave']);
-unset($_SESSION['clave']);
-
-if(isset($_SESSION['usuario'])){
-    echo 'Hola, ' . htmlspecialchars($_SESSION['usuario']['nombre']);
-}
-
-echo 'Has visitado esta página ' . htmlspecialchars($_SESSION['visitas']) . 'veces';
+$board = getBoardFromCSV(__DIR__ . '/src/board_data/board1.csv');
 
 $num_rows = count($board);
 $num_columns = count($board[0]);
 
-//$link_pos = getLinkPosFromQS($num_rows,$num_columns);
+// Recuperar la posición de Link
+$x = $_SESSION['x'] ?? 1;
+$y = $_SESSION['y'] ?? 1;
 
-$board_markup = getBoardMarkup($board);
 
-include(__DIR__.'/templates/index.tpl.php');
+// Comprobamo si se ha pulsado una dirección
+if (isset($_GET['direccion'])) {
 
-?>
+    if ($_GET['direccion'] == 'arriba') {
+        $y--;
+    } elseif ($_GET['direccion'] == 'abajo') {
+        $y++;
+    } elseif ($_GET['direccion'] == 'izquierda') {
+        $x--;
+    } elseif ($_GET['direccion'] == 'derecha') {
+        $x++;
+    }
 
-<p>Has visitado esta página <?=  $_SESSION['visitas'] ?> veces</p>
+
+    // -------------------ESTO NO LO ENTIENDOOOOOOO -----------------------------
+    // Comprobar que Link no salga del tablero
+    if (
+        $x >= 0 && $x < $num_columns &&
+        $y >= 0 && $y < $num_rows
+    ) {
+
+        $_SESSION['x'] = $x;
+        $_SESSION['y'] = $y;
+    } else {
+
+        // Recuperar la posición anterior
+        $x = $_SESSION['x'] ?? 1;
+        $y = $_SESSION['y'] ?? 1;
+    }
+
+    // Evitar repetir el movimiento al actualizar
+    header('Location: index.php');
+    exit;
+}
+
+// Guardar la posición inicial si todavía no existe
+$_SESSION['x'] = $x;
+$_SESSION['y'] = $y;
+
+
+$board_markup = getBoardMarkup($board, $x, $y);
+
+
+include(__DIR__ . '/templates/index.tpl.php');
