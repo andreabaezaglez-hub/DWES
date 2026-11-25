@@ -11,9 +11,6 @@ const PALETA = [
     'indigo' => 'Índigo',
 ];
 
-if (!isset(PALETA['color'])) {
-    $errores['color'] = "Selecciona un color válido.";
-}
 
 function iniciarTablero(){
     $tablero = [];

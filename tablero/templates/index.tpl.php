@@ -1,3 +1,14 @@
+<?php
+/** 
+ * @var array $tablero
+ * @var int $totalCasillas
+ * @var float $porcentaje
+ * @var array $arrayPintadas
+ * @var array $filasMaximas
+ */
+
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -255,8 +266,13 @@
         </header>
 
         <!-- MENSAJES: se muestra como mucho uno, según el resultado de la última acción -->
-        <p class="mensaje ok">Casilla (2, 7) pintada de rosa.</p>
-        <p class="mensaje error">No se ha podido realizar la acción. Revisa los datos.</p>
+        <?php if (!empty($mensaje)) { ?>
+            <p class="mensaje ok"><?= $mensaje ?></p>
+        <?php } ?>
+
+        <?php if (!empty($errores)) { ?>
+            <p class="mensaje error">No se ha podido realizar la acción. Revisa los datos.</p>
+        <?php } ?>
 
         <main>
 
@@ -267,29 +283,41 @@
                 <form method="post" action="index.php" novalidate>
 
                     <!-- Ejemplo de campo con error: clase con-error + span.error -->
-                    <div class="campo con-error">
+                    <div class="campo <?= isset($errores['fila']) ? 'con-error' : '' ?>">
                         <label for="fila">Fila (1-5)</label>
-                        <input type="number" id="fila" name="fila" value="7">
-                        <span class="error">La fila debe ser un número entre 1 y 5.</span>
+                        <input type="number" id="fila" name="fila" value="<?= htmlspecialchars($fila) ?>">
+
+                        <?php if (isset($errores['fila'])) { ?>
+                            <span class="error"><?= $errores['fila'] ?></span>
+                        <?php } ?>
                     </div>
 
-                    <div class="campo">
+                    <div class="campo <?= isset($errores['columna']) ? 'con-error' : '' ?>">
                         <label for="columna">Columna (1-8)</label>
-                        <input type="number" id="columna" name="columna" value="7">
+                        <input type="number" id="columna" name="columna" value="<?= htmlspecialchars($columna) ?>">
+
+                        <?php if (isset($errores['columna'])) { ?>
+                            <span class="error"><?= $errores['columna'] ?></span>
+                        <?php } ?>
                     </div>
 
-                    <div class="campo">
+                    <div class="campo <?= isset($errores['color']) ? 'con-error' : '' ?>">
                         <label for="color">Color</label>
                         <select id="color" name="color">
-                            <option value="">-- Elige un color --</option>
-                            <option value="cian">Cian</option>
-                            <option value="rosa" selected>Rosa</option>
-                            <option value="lima">Lima</option>
-                            <option value="gris">Gris</option>
-                            <option value="marron">Marrón</option>
-                            <option value="indigo">Índigo</option>
-                        </select>
-                    </div>
+                            <option value="" <?= $color == '' ? 'selected' : '' ?>>-- Elige un color --</option>
+                            <option value="cian" <?= $color == 'cian' ? 'selected' : '' ?>>Cian</option>
+                            <option value="rosa" <?= $color == 'rosa' ? 'selected' : '' ?>>Rosa</option>
+                            <option value="lima" <?= $color == 'lima' ? 'selected' : '' ?>>Lima</option>
+                            <option value="gris" <?= $color == 'gris' ? 'selected' : '' ?>>Gris</option>
+                            <option value="marron" <?= $color == 'marron' ? 'selected' : '' ?>>Marrón</option>
+                            <option value="indigo" <?= $color == 'indigo' ? 'selected' : '' ?>>Índigo</option>
+                            </select>
+
+                                <?php if (isset($errores['color'])) { ?>
+                                    <span class="error"><?= $errores['color'] ?></span>
+                                <?php } ?>
+                        </div>
+                    
 
                     <div class="botones">
                         <button type="submit" name="accion" value="pintar" class="btn-pintar">Pintar</button>
@@ -327,7 +355,8 @@
                         <th>8</th>
                     </tr>
                     
-                    <?php foreach($tablero as $numero => $fila){ $i=1; ?>
+                    <?php foreach ($tablero as $numero => $fila) {
+                        $i = 1; ?>
                     <tr>
                         <th><?= $numero + 1 ?></th>
                         <?php foreach ($fila as $color) { ?>
@@ -338,18 +367,19 @@
 
                 </table>
 
+                <?php if ($casillasPintadas > 0){ ?>
                 <div class="estadisticas">
                     <h2>Estadísticas</h2>
-                    <p class="resumen">Casillas pintadas: <strong>9 de 40</strong> (22,5 %)</p>
+                    <p class="resumen">Casillas pintadas: <strong><?= $casillasPintadas ?> de <?= $totalCasillas ?></strong> (<?= $porcentaje ?> %)</p>
+
                     <ul class="recuento">
-                        <li>Fila 1: 2</li>
-                        <li>Fila 2: 3</li>
-                        <li>Fila 3: 1</li>
-                        <li>Fila 4: 2</li>
-                        <li>Fila 5: 1</li>
+                        <?php foreach ($arrayPintadas as $numeroFila => $numeroPintadas) { ?>
+                            <li>Fila <?= $numeroFila ?>: <?= $numeroPintadas ?></li>
+                        <?php } ?>
                     </ul>
-                    <p class="resumen" style="margin-top: 10px;">Fila más pintada: <strong>2</strong> (3 casillas)</p>
+                    <p class="resumen" style="margin-top: 10px;">Fila<?= count($filasMaximas) > 1 ? 's' : '' ?> más pintada<?= count($filasMaximas) > 1 ? 's' : '' ?>: <strong><?= implode(', ', $filasMaximas) ?></strong> (<?= $maxPintadas ?> casillas)</p>
                 </div>
+                <?php } ?>
             </section>
 
         </main>
